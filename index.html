@@ -7,7 +7,7 @@
 body {
 margin: 0;
 overflow: hidden;
-background-color: #000;
+background: linear-gradient(135deg, #1a0033 0%, #330066 50%, #1a0033 100%);
 display: flex;
 justify-content: center;
 align-items: center;
@@ -21,8 +21,8 @@ bottom: 30px;
 left: 50%;
 transform: translateX(-50%);
 font-size: 32px;
-color: #ff69b4;
-text-shadow: 0 0 20px #ff69b4, 0 0 40px #ff1493;
+color: #c85ce0;
+text-shadow: 0 0 20px #9933ff, 0 0 40px #c85ce0, 0 0 60px #9933ff;
 font-family: 'Arial', sans-serif;
 font-weight: bold;
 opacity: 0;
@@ -54,34 +54,34 @@ renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
 // 2. Iluminação mágica (Luzes Ambiente e Pontual)
-const ambientLight = new THREE.AmbientLight(0xffd6e8, 1.2);
+const ambientLight = new THREE.AmbientLight(0xe0c5f0, 1.2);
 scene.add(ambientLight);
 
-const centerLight = new THREE.PointLight(0xff69b4, 5, 30);
+const centerLight = new THREE.PointLight(0x9933ff, 5, 30);
 centerLight.position.set(0, 1.5, 0);
 scene.add(centerLight);
 
 // Luz adicional para melhorar as pétalas
-const sideLight = new THREE.PointLight(0xffb6d9, 3, 25);
+const sideLight = new THREE.PointLight(0xc85ce0, 3, 25);
 sideLight.position.set(4, 3, 4);
 scene.add(sideLight);
 
 // Luz traseira para criar profundidade
-const backLight = new THREE.PointLight(0xff99cc, 2, 20);
+const backLight = new THREE.PointLight(0xbb66ff, 2, 20);
 backLight.position.set(-4, 1, -5);
 scene.add(backLight);
 
 // 3. Material de pétalas cristalinas brilhantes (Vidro/Material de Brilho)
 const petalMaterial = new THREE.MeshPhysicalMaterial({
-color: 0xffb6d9,
-emissive: 0xff69b4,
+color: 0xc85ce0,  // Roxo vibrante
+emissive: 0x9933ff,  // Roxo mais escuro
 emissiveIntensity: 0.6,
-roughness: 0.03,  // Mais brilhante
-transmission: 0.9,  // Mais transparente
-thickness: 3.0,  // Mais espessura
+roughness: 0.03,
+transmission: 0.9,
+thickness: 3.0,
 clearcoat: 1.0,
 clearcoatRoughness: 0.01,
-iridescence: 0.5,  // Efeito iridescente
+iridescence: 0.5,
 iridescenceIOR: 1.3,
 side: THREE.DoubleSide,
 transparent: true,
@@ -159,7 +159,7 @@ scene.add(flowerGroup);
 
 // 6. Centro brilhante da flor (Núcleo de Brilho)
 const coreGeo = new THREE.SphereGeometry(0.6, 32, 32);
-const coreMat = new THREE.MeshBasicMaterial({ color: 0xfffacd });
+const coreMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 const core = new THREE.Mesh(coreGeo, coreMat);
 core.position.y = 0;
 scene.add(core);
@@ -167,7 +167,7 @@ scene.add(core);
 // Adicionar mais brilho ao núcleo - halo brilhante
 const coreGlow = new THREE.SphereGeometry(0.85, 32, 32);
 const coreGlowMat = new THREE.MeshBasicMaterial({ 
-  color: 0xffff99,
+  color: 0xffdd00,
   opacity: 0.4,
   transparent: true
 });
@@ -181,6 +181,43 @@ const coreInnerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 const coreInnerMesh = new THREE.Mesh(coreInner, coreInnerMat);
 coreInnerMesh.position.y = 0;
 scene.add(coreInnerMesh);
+
+// ===== PAPEL DE BUQUÊ =====
+// Criar papel enrolado/amassado embaixo da flor
+const wrapperMaterial = new THREE.MeshStandardMaterial({
+color: 0xf5e6d3,  // Cor de papel/papel kraft
+roughness: 0.6,
+metalness: 0.0,
+side: THREE.DoubleSide
+});
+
+// Cilindro base para o buquê (papel enrolado)
+const wrapperGeo = new THREE.ConeGeometry(2.0, 3.0, 16);
+const wrapper = new THREE.Mesh(wrapperGeo, wrapperMaterial);
+wrapper.position.y = -2.0;
+scene.add(wrapper);
+
+// Adicionar algumas camadas de papel (efeito de buquê)
+const wrapperLayer2Geo = new THREE.ConeGeometry(1.9, 2.8, 16);
+const wrapperLayer2Mat = new THREE.MeshStandardMaterial({
+color: 0xf0d9c8,
+roughness: 0.65,
+metalness: 0.0
+});
+const wrapperLayer2 = new THREE.Mesh(wrapperLayer2Geo, wrapperLayer2Mat);
+wrapperLayer2.position.y = -1.9;
+scene.add(wrapperLayer2);
+
+// Camada superior mais clara
+const wrapperLayer3Geo = new THREE.ConeGeometry(2.1, 3.2, 16);
+const wrapperLayer3Mat = new THREE.MeshStandardMaterial({
+color: 0xfdf5f0,
+roughness: 0.7,
+metalness: 0.0
+});
+const wrapperLayer3 = new THREE.Mesh(wrapperLayer3Geo, wrapperLayer3Mat);
+wrapperLayer3.position.y = -2.1;
+scene.add(wrapperLayer3);
 
 // 7. Animação de abertura e rotação (Loop de Animação)
 let progress = 0;
