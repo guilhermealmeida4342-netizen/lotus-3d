@@ -42,27 +42,44 @@ scene.add(centerLight);
 
 // 3. Material de pétalas cristalinas brilhantes (Vidro/Material de Brilho)
 const petalMaterial = new THREE.MeshPhysicalMaterial({
-color: 0xffb6c1,
-emissive: 0xff1493,
-emissiveIntensity: 0.3,
-roughness: 0.1,
-transmission: 0.6, // Transparência de vidro
-thickness: 1.2,
+color: 0xffc0cb,
+emissive: 0xff69b4,
+emissiveIntensity: 0.4,
+roughness: 0.08,
+transmission: 0.7, // Transparência de vidro
+thickness: 1.5,
 clearcoat: 1.0,
-clearcoatRoughness: 0.1,
+clearcoatRoughness: 0.05,
 side: THREE.DoubleSide,
 transparent: true,
-opacity: 0.85
+opacity: 0.9
 });
 
 // 4. Construindo a forma da pétala (Geometria de Pétala)
 function createPetalShape() {
 const shape = new THREE.Shape();
-shape.moveTo(0, 0);
-shape.bezierCurveTo(0.8, 1, 1.2, 2.5, 0, 4);
-shape.bezierCurveTo(-1.2, 2.5, -0.8, 1, 0, 0);
 
-const extrudeSettings = { depth: 0.05, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: 0.02 };
+// Criar pétala muito mais alongada e realista, com ponta
+shape.moveTo(0, 0);
+// Lado direito - mais curvo
+shape.quadraticCurveTo(0.3, 0.8, 0.35, 1.6);
+shape.quadraticCurveTo(0.35, 2.2, 0.25, 2.8);
+shape.quadraticCurveTo(0.15, 3.3, 0.05, 3.8);
+shape.quadraticCurveTo(0.02, 4.2, 0, 4.5); // Ponta
+
+// Lado esquerdo - simetria
+shape.quadraticCurveTo(-0.02, 4.2, -0.05, 3.8);
+shape.quadraticCurveTo(-0.15, 3.3, -0.25, 2.8);
+shape.quadraticCurveTo(-0.35, 2.2, -0.35, 1.6);
+shape.quadraticCurveTo(-0.3, 0.8, 0, 0);
+
+const extrudeSettings = { 
+  depth: 0.12, 
+  bevelEnabled: true, 
+  bevelSegments: 5, 
+  steps: 3, 
+  bevelSize: 0.04 
+};
 return new THREE.ExtrudeGeometry(shape, extrudeSettings);
 }
 
@@ -72,9 +89,16 @@ const flowerGroup = new THREE.Group();
 // 5. Criando camadas de pétalas e distribuindo para formar a flor
 const petals = [];
 const layers = [
-{ count: 6, scale: 0.6, angleOffset: 0.8 },
-{ count: 10, scale: 0.8, angleOffset: 1.1 },
-{ count: 14, scale: 1.0, angleOffset: 1.4 }
+// Centro da flor - pétalas pequenas e apertadas
+{ count: 5, scale: 0.25, angleOffset: 2.2, delay: 0.0, zPos: 1.2, rotation: 0.4 },
+{ count: 6, scale: 0.35, angleOffset: 2.3, delay: 0.12, zPos: 0.9, rotation: 0.35 },
+{ count: 8, scale: 0.45, angleOffset: 2.4, delay: 0.24, zPos: 0.6, rotation: 0.3 },
+// Camadas do meio
+{ count: 10, scale: 0.6, angleOffset: 2.5, delay: 0.36, zPos: 0.3, rotation: 0.25 },
+{ count: 12, scale: 0.75, angleOffset: 2.6, delay: 0.48, zPos: 0.0, rotation: 0.2 },
+// Camadas externas - pétalas maiores e mais abertas
+{ count: 14, scale: 0.9, angleOffset: 2.7, delay: 0.6, zPos: -0.3, rotation: 0.15 },
+{ count: 16, scale: 1.0, angleOffset: 2.8, delay: 0.72, zPos: -0.6, rotation: 0.1 },
 ];
 
 layers.forEach((layer) => {
@@ -84,28 +108,45 @@ const angle = (i / layer.count) * Math.PI * 2;
 
 const pivotGroup = new THREE.Group();
 petalMesh.scale.set(layer.scale, layer.scale, layer.scale);
-petalMesh.position.y = 0;
+petalMesh.position.y = layer.zPos;
 
-// Ângulo inicial (fechado)
+// Posicionar pétalas em espiral realista
 pivotGroup.rotation.y = angle;
-petalMesh.rotation.x = 0.1;
+petalMesh.rotation.x = layer.rotation;
+petalMesh.position.z = 0.7;
 
 pivotGroup.add(petalMesh);
 flowerGroup.add(pivotGroup);
 
 // Armazenando as pétalas para animá-las depois
-petals.push({ mesh: petalMesh, maxRotation: layer.angleOffset });
+petals.push({ 
+  mesh: petalMesh, 
+  pivotGroup: pivotGroup,
+  maxRotation: layer.angleOffset,
+  delay: layer.delay
+});
 }
 });
 
 scene.add(flowerGroup);
 
 // 6. Centro brilhante da flor (Núcleo de Brilho)
-const coreGeo = new THREE.SphereGeometry(0.4, 32, 32);
-const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const coreGeo = new THREE.SphereGeometry(0.5, 32, 32);
+const coreMat = new THREE.MeshBasicMaterial({ color: 0xffff99 });
 const core = new THREE.Mesh(coreGeo, coreMat);
-core.position.y = 0.3;
+core.position.y = 0;
 scene.add(core);
+
+// Adicionar mais brilho ao núcleo
+const coreGlow = new THREE.SphereGeometry(0.65, 32, 32);
+const coreGlowMat = new THREE.MeshBasicMaterial({ 
+  color: 0xffff99,
+  opacity: 0.3,
+  transparent: true
+});
+const coreGlowMesh = new THREE.Mesh(coreGlow, coreGlowMat);
+coreGlowMesh.position.y = 0;
+scene.add(coreGlowMesh);
 
 // 7. Animação de abertura e rotação (Loop de Animação)
 let progress = 0;
@@ -113,14 +154,38 @@ let progress = 0;
 function animate() {
 requestAnimationFrame(animate);
 
-// Girar a flor inteira lentamente
-flowerGroup.rotation.y += 0.005;
+// Girar a flor inteira muito lentamente para parecer natural
+flowerGroup.rotation.y += 0.0008;
+flowerGroup.rotation.x += 0.0002;
 
-// Movimento de abertura gradual das pétalas
+// Pulsar suave do núcleo
+const pulse = Math.sin(Date.now() * 0.0015) * 0.12 + 1;
+core.scale.set(pulse, pulse, pulse);
+coreGlowMesh.scale.set(pulse * 1.3, pulse * 1.3, pulse * 1.3);
+
+// Movimento de abertura gradual e suave das pétalas
 if (progress < 1) {
-progress += 0.005;
-petals.forEach(item => {
-item.mesh.rotation.x = progress * item.maxRotation;
+progress += 0.0012;
+
+// Efeito easing suave (ease-in-out)
+const easeProgress = progress < 0.5 
+  ? 2 * progress * progress 
+  : -1 + (4 - 2 * progress) * progress;
+
+petals.forEach((item, index) => {
+// Delay escalonado para cada pétala - cria efeito cascata
+const delayedProgress = Math.max(0, easeProgress - item.delay);
+const clampedProgress = Math.min(1, delayedProgress / (1 - item.delay));
+
+// Rotação mais realista - pétalas abertas gradualmente
+item.mesh.rotation.x += (clampedProgress * item.maxRotation) * 0.01;
+
+// Movimento suave das pétalas para fora
+item.pivotGroup.scale.set(
+  1 + clampedProgress * 0.5,
+  1 + clampedProgress * 0.5,
+  1 + clampedProgress * 0.5
+);
 });
 }
 
