@@ -17,7 +17,7 @@ display: block;
 }
 #message {
 position: fixed;
-bottom: 30px;
+top: 80px;
 left: 50%;
 transform: translateX(-50%);
 font-size: 32px;
@@ -39,14 +39,12 @@ opacity: 1;
 </head>
 <body>
 
-<div id="message">Feito com Carinho 💕</div>
-
 <script>
 // 1. Configurando a cena e a câmera
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 3, 12);  // Mais afastado para ver melhor em 3D
-camera.lookAt(0, 0, 0);
+camera.position.set(0, 7.5, 8.5);
+camera.lookAt(0, 0.8, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -71,21 +69,21 @@ const backLight = new THREE.PointLight(0xbb66ff, 2, 20);
 backLight.position.set(-4, 1, -5);
 scene.add(backLight);
 
-// 3. Material de pétalas cristalinas brilhantes (Vidro/Material de Brilho)
+// 3. Material de pétalas cristalinas brilhantes (mais intenso e profundo)
 const petalMaterial = new THREE.MeshPhysicalMaterial({
-color: 0xc85ce0,  // Roxo vibrante
-emissive: 0x9933ff,  // Roxo mais escuro
-emissiveIntensity: 0.6,
-roughness: 0.03,
-transmission: 0.9,
-thickness: 3.0,
+color: 0x8f1dff,
+emissive: 0x6d00d9,
+emissiveIntensity: 0.85,
+roughness: 0.02,
+transmission: 0.95,
+thickness: 4.2,
 clearcoat: 1.0,
-clearcoatRoughness: 0.01,
-iridescence: 0.5,
-iridescenceIOR: 1.3,
+clearcoatRoughness: 0.0,
+iridescence: 0.7,
+iridescenceIOR: 1.2,
 side: THREE.DoubleSide,
 transparent: true,
-opacity: 0.97
+opacity: 1
 });
 
 // 4. Construindo a forma da pétala (Geometria de Pétala) - MAIS PROFUNDA
@@ -183,86 +181,86 @@ coreInnerMesh.position.y = 0;
 scene.add(coreInnerMesh);
 
 // ===== PAPEL DE BUQUÊ =====
-// Criar papel enrolado/amassado embaixo da flor
+// Removendo o branco pesado; apenas um suporte bem discreto e quase invisível
 const wrapperMaterial = new THREE.MeshStandardMaterial({
-color: 0xf5e6d3,  // Cor de papel/papel kraft
-roughness: 0.6,
-metalness: 0.0,
-side: THREE.DoubleSide
+  color: 0x2f1b3d,
+  roughness: 0.95,
+  metalness: 0.0,
+  transparent: true,
+  opacity: 0.08
 });
 
-// Cilindro base para o buquê (papel enrolado)
-const wrapperGeo = new THREE.ConeGeometry(2.0, 3.0, 16);
-const wrapper = new THREE.Mesh(wrapperGeo, wrapperMaterial);
-wrapper.position.y = -2.0;
-scene.add(wrapper);
+const wrapperBaseGeo = new THREE.CylinderGeometry(1.5, 2.1, 1.8, 24, 1, true);
+const wrapperBase = new THREE.Mesh(wrapperBaseGeo, wrapperMaterial);
+wrapperBase.position.y = -1.4;
+scene.add(wrapperBase);
 
-// Adicionar algumas camadas de papel (efeito de buquê)
-const wrapperLayer2Geo = new THREE.ConeGeometry(1.9, 2.8, 16);
-const wrapperLayer2Mat = new THREE.MeshStandardMaterial({
-color: 0xf0d9c8,
-roughness: 0.65,
-metalness: 0.0
-});
-const wrapperLayer2 = new THREE.Mesh(wrapperLayer2Geo, wrapperLayer2Mat);
-wrapperLayer2.position.y = -1.9;
-scene.add(wrapperLayer2);
+const wrapperInnerGeo = new THREE.ConeGeometry(1.3, 1.2, 20);
+const wrapperInner = new THREE.Mesh(wrapperInnerGeo, wrapperMaterial);
+wrapperInner.position.y = -0.5;
+scene.add(wrapperInner);
 
-// Camada superior mais clara
-const wrapperLayer3Geo = new THREE.ConeGeometry(2.1, 3.2, 16);
-const wrapperLayer3Mat = new THREE.MeshStandardMaterial({
-color: 0xfdf5f0,
-roughness: 0.7,
-metalness: 0.0
+// Pequenos detalhes muito sutis para manter o charme sem competir com a lotus
+const tinyHeartGeometry = new THREE.TorusKnotGeometry(0.08, 0.02, 40, 8, 2, 3);
+const tinyHeartMaterial = new THREE.MeshStandardMaterial({
+  color: 0xeea5c7,
+  roughness: 0.9,
+  metalness: 0.0,
+  transparent: true,
+  opacity: 0.25
 });
-const wrapperLayer3 = new THREE.Mesh(wrapperLayer3Geo, wrapperLayer3Mat);
-wrapperLayer3.position.y = -2.1;
-scene.add(wrapperLayer3);
+
+const tinyHeart = new THREE.Mesh(tinyHeartGeometry, tinyHeartMaterial);
+tinyHeart.position.set(0.8, -1.0, 0.5);
+tinyHeart.rotation.set(1.2, 0.4, 0.8);
+scene.add(tinyHeart);
+
+const tinyHeart2 = tinyHeart.clone();
+tinyHeart2.position.set(-0.8, -1.15, 0.6);
+tinyHeart2.rotation.set(1.0, -0.4, -0.7);
+scene.add(tinyHeart2);
+
+// Flor dominante na composição
+flowerGroup.scale.set(1.35, 1.35, 1.35);
 
 // 7. Animação de abertura e rotação (Loop de Animação)
 let progress = 0;
 let messageShown = false;
 
+function easeInOutCubic(t) {
+  return t < 0.5
+    ? 4 * t * t * t
+    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
 function animate() {
-requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 
-// Girar a flor inteira lentamente
-flowerGroup.rotation.y += 0.003;
-flowerGroup.rotation.x += 0.0005;
+  if (progress < 1) {
+    progress += 0.0035;
+  }
 
-// Pulsar suave do núcleo
-const pulse = Math.sin(Date.now() * 0.002) * 0.2 + 1;
-core.scale.set(pulse, pulse, pulse);
-coreGlowMesh.scale.set(pulse * 1.4, pulse * 1.4, pulse * 1.4);
-coreInnerMesh.scale.set(pulse * 0.8, pulse * 0.8, pulse * 0.8);
+  const easedProgress = easeInOutCubic(Math.min(1, progress));
 
-// Movimento de abertura gradual das pétalas
-if (progress < 1) {
-progress += 0.002;  // Um pouco mais rápido
+  petals.forEach((item) => {
+    const delayedProgress = Math.max(0, easedProgress - item.delay);
+    const clampedProgress = Math.min(1, delayedProgress / Math.max(0.1, 1 - item.delay));
 
-// Efeito easing suave
-const easeProgress = progress < 0.5 
-  ? 2 * progress * progress 
-  : -1 + (4 - 2 * progress) * progress;
+    item.mesh.rotation.x = 0.18 + clampedProgress * (item.maxRotation - 0.18);
+    item.mesh.rotation.z = Math.sin(progress * 8 + item.delay * 20) * 0.04;
+  });
 
-petals.forEach(item => {
-// Delay escalonado para cada pétala
-const delayedProgress = Math.max(0, easeProgress - item.delay);
-const clampedProgress = Math.min(1, delayedProgress / (1 - item.delay));
+  // Depois que abre, a flor gira suavemente sem "fechar" ou parecer estranha
+  flowerGroup.rotation.y += progress >= 1 ? 0.0032 : 0.0018;
+  flowerGroup.rotation.x = 0.0;
 
-// Rotação suave
-item.mesh.rotation.x = 0.15 + (clampedProgress * item.maxRotation);
-});
+  // Pulsar suave do núcleo
+  const pulse = Math.sin(Date.now() * 0.002) * 0.18 + 1;
+  core.scale.set(pulse, pulse, pulse);
+  coreGlowMesh.scale.set(pulse * 1.4, pulse * 1.4, pulse * 1.4);
+  coreInnerMesh.scale.set(pulse * 0.8, pulse * 0.8, pulse * 0.8);
 
-// Mostrar mensagem quando a animação terminar
-if (progress >= 0.95 && !messageShown) {
-messageShown = true;
-const messageEl = document.getElementById('message');
-messageEl.classList.add('show');
-}
-}
-
-renderer.render(scene, camera);
+  renderer.render(scene, camera);
 }
 
 animate();
